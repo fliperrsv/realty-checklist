@@ -127,6 +127,7 @@ h2 {
   color: #2d3748;
   margin-top: 16px;
 }
+.secondary-btn:active { transform: scale(0.97); }
 
 /* Чек-лист */
 .checklist-item {
