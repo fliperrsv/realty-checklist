@@ -1,0 +1,20 @@
+{
+  "name": "Чек-лист сделки",
+  "short_name": "Сделка",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#f5f7fa",
+  "theme_color": "#2b6cb0",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192/2b6cb0/ffffff?text=🏠",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/2b6cb0/ffffff?text=🏠",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
