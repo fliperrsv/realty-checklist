@@ -14,6 +14,14 @@
     </header>
 
     <main>
+      <!-- ПРОГРЕСС-БАР (новое) -->
+      <div id="progress-bar" style="display: none; margin-bottom: 20px;">
+        <div style="background: #edf2f7; border-radius: 20px; height: 8px; overflow: hidden;">
+          <div id="progress-fill" style="width: 0%; height: 100%; background: #2b6cb0; transition: width 0.5s;"></div>
+        </div>
+        <p id="progress-text" style="text-align: right; font-size: 14px; color: #4a5568; margin-top: 4px;">0% выполнено</p>
+      </div>
+
       <!-- Шаг 1: выбор роли -->
       <section id="step-role" class="step active">
         <h2>Кто вы?</h2>
@@ -34,12 +42,30 @@
       <section id="step-result" class="step">
         <h2>Ваш план действий</h2>
         <div id="checklist-container"></div>
+        <button id="btn-pdf" class="secondary-btn" style="margin-top: 10px;">📄 Скачать PDF</button>
         <div id="deadline-timer"></div>
+
+        <!-- Отправка на email (новое) -->
+        <div style="margin: 16px 0;">
+          <label for="email-input" style="font-weight: 500;">📧 Отправить на почту (PDF)</label>
+          <input type="email" id="email-input" placeholder="ваш@email.ru" style="width:100%; padding:12px; border-radius:12px; border:1px solid #e2e8f0; margin-top:4px;">
+          <button id="btn-send-email" class="secondary-btn" style="margin-top:8px;">Отправить</button>
+        </div>
+
+        <!-- Подписка на Telegram (новое) -->
+        <div style="margin: 16px 0;">
+          <label for="tg-input">🔔 Получать напоминания в Telegram</label>
+          <input type="text" id="tg-input" placeholder="@username или номер телефона" style="width:100%; padding:12px; border-radius:12px; border:1px solid #e2e8f0; margin-top:4px;">
+          <button id="btn-subscribe-tg" class="secondary-btn" style="margin-top:8px;">Подписаться</button>
+        </div>
+
         <button id="btn-reset" class="secondary-btn">Начать заново</button>
       </section>
     </main>
   </div>
 
+  <!-- Подключаем библиотеку для PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="app.js"></script>
 </body>
 </html>
