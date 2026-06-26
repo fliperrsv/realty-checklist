@@ -6,20 +6,41 @@
   <title>Чек-лист для сделки</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
+  <meta name="theme-color" content="#2b6cb0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
   <div id="app">
     <header>
       <h1>📋 Чек-лист сделки</h1>
+      <div style="display: flex; gap: 6px; align-items: center;">
+        <button id="install-btn" class="icon-btn" aria-label="Установить приложение" style="display:none;">📲</button>
+        <button id="theme-toggle" class="icon-btn" aria-label="Переключить тему">🌙</button>
+        <span id="user-status" style="font-size: 13px; color: var(--text); white-space: nowrap;">Гость</span>
+        <button id="auth-btn" class="icon-btn" aria-label="Вход/регистрация">👤</button>
+      </div>
     </header>
 
+    <!-- Модальное окно авторизации -->
+    <div id="auth-modal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
+      <div style="background: var(--card); max-width:400px; width:100%; padding:24px; border-radius:24px; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <h2 id="auth-title" style="color: var(--text);">Вход</h2>
+        <input type="email" id="auth-email" placeholder="Email" style="width:100%; padding:12px; margin:8px 0; border-radius:12px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
+        <input type="password" id="auth-password" placeholder="Пароль" style="width:100%; padding:12px; margin:8px 0; border-radius:12px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
+        <button id="auth-submit" class="primary-btn">Войти</button>
+        <button id="auth-toggle-mode" style="margin-top:8px; background:none; border:none; color:var(--primary); cursor:pointer;">Нет аккаунта? Зарегистрироваться</button>
+        <button id="auth-close" style="margin-top:12px; background:none; border:none; color:var(--text); opacity:0.6; cursor:pointer;">Закрыть</button>
+      </div>
+    </div>
+
     <main>
-      <!-- ПРОГРЕСС-БАР (новое) -->
+      <!-- Прогресс-бар -->
       <div id="progress-bar" style="display: none; margin-bottom: 20px;">
-        <div style="background: #edf2f7; border-radius: 20px; height: 8px; overflow: hidden;">
-          <div id="progress-fill" style="width: 0%; height: 100%; background: #2b6cb0; transition: width 0.5s;"></div>
+        <div style="background: var(--border); border-radius: 20px; height: 8px; overflow: hidden;">
+          <div id="progress-fill" style="width: 0%; height: 100%; background: var(--primary); transition: width 0.5s;"></div>
         </div>
-        <p id="progress-text" style="text-align: right; font-size: 14px; color: #4a5568; margin-top: 4px;">0% выполнено</p>
+        <p id="progress-text" style="text-align: right; font-size: 14px; color: var(--text); margin-top: 4px;">0% выполнено</p>
       </div>
 
       <!-- Шаг 1: выбор роли -->
@@ -31,31 +52,34 @@
         </div>
       </section>
 
-      <!-- Шаг 2: дополнительные вопросы -->
+      <!-- Шаг 2: вопросы -->
       <section id="step-questions" class="step">
         <h2>Уточните детали</h2>
         <div id="questions-container"></div>
         <button id="btn-generate" class="primary-btn" disabled>Показать чек-лист</button>
       </section>
 
-      <!-- Шаг 3: результат – чек-лист -->
+      <!-- Шаг 3: результат -->
       <section id="step-result" class="step">
         <h2>Ваш план действий</h2>
         <div id="checklist-container"></div>
-        <button id="btn-pdf" class="secondary-btn" style="margin-top: 10px;">📄 Скачать PDF</button>
+        <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
+          <button id="btn-pdf" class="secondary-btn" style="flex:1;">📄 PDF</button>
+          <button id="btn-csv" class="secondary-btn" style="flex:1;">📊 CSV</button>
+        </div>
         <div id="deadline-timer"></div>
 
-        <!-- Отправка на email (новое) -->
+        <!-- Отправка email -->
         <div style="margin: 16px 0;">
-          <label for="email-input" style="font-weight: 500;">📧 Отправить на почту (PDF)</label>
-          <input type="email" id="email-input" placeholder="ваш@email.ru" style="width:100%; padding:12px; border-radius:12px; border:1px solid #e2e8f0; margin-top:4px;">
+          <label for="email-input" style="font-weight: 500; color: var(--text);">📧 Отправить на почту (PDF)</label>
+          <input type="email" id="email-input" placeholder="ваш@email.ru" style="width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); background:var(--bg); color:var(--text); margin-top:4px;">
           <button id="btn-send-email" class="secondary-btn" style="margin-top:8px;">Отправить</button>
         </div>
 
-        <!-- Подписка на Telegram (новое) -->
+        <!-- Подписка Telegram -->
         <div style="margin: 16px 0;">
-          <label for="tg-input">🔔 Получать напоминания в Telegram</label>
-          <input type="text" id="tg-input" placeholder="@username или номер телефона" style="width:100%; padding:12px; border-radius:12px; border:1px solid #e2e8f0; margin-top:4px;">
+          <label for="tg-input" style="font-weight: 500; color: var(--text);">🔔 Получать напоминания в Telegram</label>
+          <input type="text" id="tg-input" placeholder="@username или номер телефона" style="width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); background:var(--bg); color:var(--text); margin-top:4px;">
           <button id="btn-subscribe-tg" class="secondary-btn" style="margin-top:8px;">Подписаться</button>
         </div>
 
@@ -64,8 +88,38 @@
     </main>
   </div>
 
-  <!-- Подключаем библиотеку для PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- Библиотеки -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
   <script src="app.js"></script>
+
+  <script>
+    // Регистрация Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('SW зарегистрирован', reg))
+        .catch(err => console.log('SW ошибка', err));
+    }
+
+    // Кнопка установки PWA
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('install-btn').style.display = 'block';
+    });
+    document.getElementById('install-btn').addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const result = await deferredPrompt.userChoice;
+        console.log('Установка:', result);
+        deferredPrompt = null;
+        document.getElementById('install-btn').style.display = 'none';
+      }
+    });
+  </script>
 </body>
 </html>
