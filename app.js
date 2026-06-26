@@ -15,7 +15,6 @@
     ]
   };
 
-  // Чек-листы (ключи – комбинация выбранных ответов)
   const CHECKLISTS = {
     buyer_default: [
       'Проверить выписку ЕГРН на обременения',
@@ -35,7 +34,6 @@
     ]
   };
 
-  // Карта дополнительных пунктов для разных случаев
   const EXTRA_TASKS = {
     mortgage_buyer: 'Получить одобрение банка на ипотеку',
     mortgage_seller: 'Запросить у банка график платежей для снятия обременения',
@@ -44,9 +42,9 @@
 
   // ---------- СОСТОЯНИЕ ----------
   let state = {
-    role: null,          // 'buyer' или 'seller'
-    answers: {},         // { property_type: 'Квартира', mortgage: 'Да', ... }
-    checklist: [],       // массив строк
+    role: null,
+    answers: {},
+    checklist: [],
     timerInterval: null,
     deadlineDate: null
   };
@@ -78,14 +76,12 @@
     });
     questionsContainer.innerHTML = html;
 
-    // Вешаем событие на изменение любого вопроса
     document.querySelectorAll('#questions-container select').forEach(sel => {
       sel.addEventListener('change', validateAndEnable);
     });
     validateAndEnable();
   }
 
-  // ---------- ПРОВЕРКА ЗАПОЛНЕННОСТИ ВСЕХ ВОПРОСОВ ----------
   function validateAndEnable() {
     const selects = document.querySelectorAll('#questions-container select');
     let allFilled = true;
@@ -95,7 +91,6 @@
     btnGenerate.disabled = !allFilled;
   }
 
-  // ---------- СБОР ОТВЕТОВ ----------
   function getAnswers() {
     const selects = document.querySelectorAll('#questions-container select');
     const ans = {};
@@ -110,8 +105,6 @@
   function generateChecklist(role, answers) {
     let base = role === 'buyer' ? CHECKLISTS.buyer_default : CHECKLISTS.seller_default;
     let extra = [];
-
-    // Добавляем специфичные задачи
     if (role === 'buyer' && answers.mortgage === 'Да') {
       extra.push(EXTRA_TASKS.mortgage_buyer);
     }
@@ -121,12 +114,10 @@
     if (role === 'seller' && answers.urgency === 'Срочная (до 1 месяца)') {
       extra.push(EXTRA_TASKS.urgent_seller);
     }
-
-    // Сортировка: сначала базовые, потом дополнительные
     return [...base, ...extra];
   }
 
-  // ---------- ОТОБРАЖЕНИЕ РЕЗУЛЬТАТА ----------
+  // ---------- ОТОБРАЖЕНИЕ РЕЗУЛЬТАТА С ПРОГРЕССОМ ----------
   function renderChecklist(tasks) {
     if (!tasks || !tasks.length) {
       checklistContainer.innerHTML = '<p>Нет задач для вашего случая.</p>';
@@ -145,13 +136,41 @@
     html += '</div>';
     checklistContainer.innerHTML = html;
 
-    // Сохраняем в localStorage (прогресс)
-    saveProgress(tasks);
+    // Прогресс-бар
+    const progressBar = document.getElementById('progress-bar');
+    progressBar.style.display = 'block';
+    updateProgress();
+
+    // Обработчики чекбоксов
+    document.querySelectorAll('.checklist-item input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', function() {
+        updateProgress();
+        saveProgress(state.checklist);
+        // Отмечаем пункт как выполненный (визуально)
+        const item = this.closest('.checklist-item');
+        if (this.checked) item.classList.add('done');
+        else item.classList.remove('done');
+      });
+    });
+
+    // Восстанавливаем сохранённое состояние (если есть)
+    loadProgress();
+
+    // Сохраняем текущий список в state для сохранения
+    state.checklist = tasks;
   }
 
-  // ---------- ТАЙМЕР ДЕДЛАЙНА ----------
+  // Функция обновления прогресса
+  function updateProgress() {
+    const total = document.querySelectorAll('.checklist-item').length;
+    const done = document.querySelectorAll('.checklist-item input:checked').length;
+    const percent = total === 0 ? 0 : Math.round((done / total) * 100);
+    document.getElementById('progress-fill').style.width = percent + '%';
+    document.getElementById('progress-text').textContent = percent + '% выполнено';
+  }
+
+  // ---------- ТАЙМЕР ----------
   function startDeadline() {
-    // Устанавливаем дедлайн на 30 дней от сегодня
     const now = new Date();
     const deadline = new Date(now);
     deadline.setDate(deadline.getDate() + 30);
@@ -172,16 +191,15 @@
     }
 
     updateTimer();
-    state.timerInterval = setInterval(updateTimer, 60000); // обновляем каждую минуту
+    state.timerInterval = setInterval(updateTimer, 60000);
   }
 
-  // ---------- СОХРАНЕНИЕ ПРОГРЕССА (localStorage) ----------
+  // ---------- СОХРАНЕНИЕ / ВОССТАНОВЛЕНИЕ ----------
   function saveProgress(tasks) {
     const data = {
       tasks: tasks,
       checked: []
     };
-    // Сохраняем состояние чекбоксов
     document.querySelectorAll('.checklist-item input[type="checkbox"]').forEach(cb => {
       if (cb.checked) data.checked.push(cb.id);
     });
@@ -193,7 +211,6 @@
     if (!raw) return;
     try {
       const data = JSON.parse(raw);
-      // Восстанавливаем чекбоксы (если уже отрисованы)
       document.querySelectorAll('.checklist-item input[type="checkbox"]').forEach(cb => {
         if (data.checked.includes(cb.id)) {
           cb.checked = true;
@@ -203,7 +220,8 @@
           const item = this.closest('.checklist-item');
           if (this.checked) item.classList.add('done');
           else item.classList.remove('done');
-          saveProgress(state.checklist); // обновляем сохранение
+          saveProgress(state.checklist);
+          updateProgress();
         });
       });
     } catch (e) {}
@@ -218,16 +236,15 @@
 
   // ---------- СБРОС ----------
   function resetAll() {
-    // Очищаем таймер
     if (state.timerInterval) clearInterval(state.timerInterval);
     localStorage.removeItem('realty_checklist');
     state = { role: null, answers: {}, checklist: [], timerInterval: null, deadlineDate: null };
-    // Сбрасываем UI
     document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('selected'));
     questionsContainer.innerHTML = '';
     checklistContainer.innerHTML = '';
     deadlineTimer.classList.remove('show');
     deadlineTimer.textContent = '';
+    document.getElementById('progress-bar').style.display = 'none';
     btnGenerate.disabled = true;
     showStep('step-role');
   }
@@ -240,7 +257,6 @@
         document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('selected'));
         this.classList.add('selected');
         state.role = this.dataset.role;
-        // Переходим к вопросам
         renderQuestions(state.role);
         showStep('step-questions');
       });
@@ -253,7 +269,6 @@
       const tasks = generateChecklist(state.role, answers);
       state.checklist = tasks;
       renderChecklist(tasks);
-      loadProgress(); // восстанавливаем сохранённые чекбоксы (если есть)
       startDeadline();
       showStep('step-result');
     });
@@ -261,22 +276,54 @@
     // 3. Кнопка "Начать заново"
     btnReset.addEventListener('click', resetAll);
 
-    // 4. Если был сохранён прогресс – можно сразу показать результат?
-    // Но мы упростим: при загрузке показываем шаг выбора роли.
-    // Однако можно проверить, есть ли сохранённый прогресс, и предложить продолжить.
-    // Для этого добавим небольшую проверку:
-    const saved = localStorage.getItem('realty_checklist');
-    if (saved) {
-      // Если хотите, можно предложить восстановить, но для чистоты – просто сбросим.
-      // Но по желанию можно добавить кнопку "Восстановить".
-      // Я предлагаю не усложнять, пользователь сам начнёт заново.
-      localStorage.removeItem('realty_checklist');
-    }
+    // 4. Кнопка PDF
+    document.getElementById('btn-pdf').addEventListener('click', function() {
+      const element = document.getElementById('checklist-container');
+      const timerText = document.getElementById('deadline-timer').textContent;
+      const wrapper = document.createElement('div');
+      wrapper.style.padding = '20px';
+      wrapper.style.fontFamily = 'Arial, sans-serif';
+      wrapper.innerHTML = `
+        <h1 style="color: #2b6cb0;">📋 Чек-лист сделки</h1>
+        <p style="font-size: 14px; color: #4a5568;">${timerText}</p>
+        <hr>
+        ${element.innerHTML}
+        <p style="margin-top: 20px; font-size: 12px; color: #a0aec0;">Сгенерировано ${new Date().toLocaleDateString()}</p>
+      `;
+      document.body.appendChild(wrapper);
+      html2pdf().from(wrapper).save('checklist.pdf').then(() => {
+        document.body.removeChild(wrapper);
+      });
+    });
+
+    // 5. Отправка на email (заглушка)
+    document.getElementById('btn-send-email').addEventListener('click', function() {
+      const email = document.getElementById('email-input').value;
+      if (!email || !email.includes('@')) {
+        alert('Введите корректный email');
+        return;
+      }
+      const tasks = document.querySelectorAll('.checklist-item label');
+      let listText = '';
+      tasks.forEach((label, i) => {
+        const checked = document.querySelector(`#task_${i}`).checked ? '✅' : '⬜';
+        listText += `${checked} ${label.textContent}\n`;
+      });
+      alert(`Письмо будет отправлено на ${email} со следующим текстом:\n\n${listText}\nДедлайн: ${document.getElementById('deadline-timer').textContent}`);
+      // Здесь можно подключить EmailJS – см. инструкцию в описании
+    });
+
+    // 6. Подписка на Telegram (заглушка)
+    document.getElementById('btn-subscribe-tg').addEventListener('click', function() {
+      const tg = document.getElementById('tg-input').value.trim();
+      if (!tg) return alert('Введите контакт');
+      localStorage.setItem('tg_subscription', tg);
+      alert('Вы подписаны на напоминания! (в демо-режиме)');
+    });
 
     // Начальный шаг
     showStep('step-role');
   }
 
-  // Запускаем после загрузки DOM
   document.addEventListener('DOMContentLoaded', init);
 })();
