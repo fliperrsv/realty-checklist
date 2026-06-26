@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Чек-лист для сделки</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>📋 Чек-лист сделки</h1>
+    </header>
+
+    <main>
+      <!-- Шаг 1: выбор роли -->
+      <section id="step-role" class="step active">
+        <h2>Кто вы?</h2>
+        <div class="role-buttons">
+          <button class="role-btn" data-role="buyer">🏠 Покупаю</button>
+          <button class="role-btn" data-role="seller">🔑 Продаю</button>
+        </div>
+      </section>
+
+      <!-- Шаг 2: дополнительные вопросы -->
+      <section id="step-questions" class="step">
+        <h2>Уточните детали</h2>
+        <div id="questions-container"></div>
+        <button id="btn-generate" class="primary-btn" disabled>Показать чек-лист</button>
+      </section>
+
+      <!-- Шаг 3: результат – чек-лист -->
+      <section id="step-result" class="step">
+        <h2>Ваш план действий</h2>
+        <div id="checklist-container"></div>
+        <div id="deadline-timer"></div>
+        <button id="btn-reset" class="secondary-btn">Начать заново</button>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
